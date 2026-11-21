@@ -230,7 +230,7 @@ def save_report(outcome):
                          f"{report['casos_aprobados']} aprobadas, "
                          f"{report['casos_fallidos']} fallidas.\n\n")
             if folio:
-                output.write(f"Folio ficticio de prueba: \`{folio}\`.\n\n")
+                output.write(f"Folio ficticio de prueba: `{folio}`.\n\n")
             output.write("El archivo JSON del artefacto contiene el detalle. "
                          "No se simularon personas ni resultados SUS.\n")
 
