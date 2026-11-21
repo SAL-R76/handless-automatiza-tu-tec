@@ -16,3 +16,5 @@ services:
         generateValue: true
       - key: DEMO_PASSWORD
         sync: false
+      - key: PUBLIC_DEMO_ENABLED
+        value: 'true'
