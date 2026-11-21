@@ -1,0 +1,52 @@
+name: E4 · pruebas en Handless (Render)
+
+# MANUAL: el test crea 1 solicitud y 1 verificación preventiva ficticias.
+# No correr en cada push. Nunca insertar contraseñas en código o inputs.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: handless-e4-live-test
+  cancel-in-progress: false
+
+jobs:
+  live-e4:
+    name: Prueba funcional real · cuatro roles
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      HANDLESS_BASE_URL: https://handless.onrender.com
+      E4_DEMO_PASSWORD: ${{ secrets.E4_DEMO_PASSWORD }}
+      E4_REPORT_PATH: artifacts/e4_live_report.json
+    steps:
+      - name: Descargar código del proyecto
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Comprobar configuración sin revelar credenciales
+        shell: bash
+        run: |
+          if [ -z "$E4_DEMO_PASSWORD" ]; then
+            echo "::error::Falta el secreto E4_DEMO_PASSWORD. Configúralo en Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          python -m py_compile scripts/test_live_e4.py
+
+      - name: Ejecutar pruebas contra el servidor desplegado
+        run: python scripts/test_live_e4.py
+
+      - name: Guardar reporte JSON descargable (sin contraseñas)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: handless-e4-resultados-publicos
+          path: artifacts/e4_live_report.json
+          if-no-files-found: warn
+          retention-days: 14
