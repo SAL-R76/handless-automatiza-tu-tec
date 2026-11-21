@@ -1,0 +1,22 @@
+databases:
+  - name: handless-e4-db
+    plan: 0.1c-256mb
+    databaseName: handless
+    user: handless
+    ipAllowList: []
+services:
+  - type: web
+    name: handless-e4
+    runtime: docker
+    plan: starter
+    autoDeployTrigger: checksPass
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: handless-e4-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DEMO_PASSWORD
+        generateValue: true
