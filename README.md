@@ -2,7 +2,7 @@
 
 **Gestión de mantenimiento preventivo y correctivo**, basada en el procedimiento TecNM-AD-PO-001 del Tecnológico Nacional de México (campus Matehuala), como **prototipo académico**, no sistema oficial.
 
-> **Estado de entrega:** código E4 publicado en este repositorio. El backend se probó localmente y el frontend React debe verificarse en GitHub Actions; el despliegue en la nube requiere conectar Render, aprobar recursos y comprobar la URL pública.
+> **Estado de entrega:** código E4 publicado en este repositorio. El backend se probó localmente y el frontend React debe verificarse en GitHub Actions; el despliegue público queda pendiente de configurar un Web Service Free en Render y una base de datos PostgreSQL Free en Neon.
 
 ## Qué cambia respecto a E3
 
@@ -63,12 +63,16 @@ Resultado de esta entrega: **32/32 tests automáticos aprobados**; benchmark rep
 
 ## Publicar en GitHub y la nube
 
-1. Crear o conectar el repositorio GitHub `handless-automatiza-tu-tec`. Cargar **todos los archivos de esta carpeta**, no solo el ZIP.
-2. Verificar en GitHub Actions que el backend y la compilación Vite pasan.
-3. Entrar en [Render](https://dashboard.render.com) y elegir **New > Blueprint**. Vincular ese repositorio. Render leerá `render.yaml` y configurará web Docker + PostgreSQL.
-4. Revisar los cargos de los planes antes de crear recursos. La base `0.1c-256mb` y web `starter` pueden generar costos; cambiar las opciones si procede.
-5. Configurar o consultar la contraseña de demostración `DEMO_PASSWORD` en Render, esperar el deploy y abrir la URL pública que Render genere. Comprobar `/api/health` y realizar una prueba de extremo a extremo.
-6. Actualizar el libro E4 con la URL real del repositorio y la URL del servicio, y documentar las pruebas de extremo a extremo **realmente** hechas en la nube.
+**Opción sin recursos de pago, recomendada:** Render Web Service `Free` (app React + FastAPI) + Neon Postgres `Free` (datos). **No elijas Blueprint si la pantalla ofrece recursos de pago.**
+
+1. En [Neon](https://console.neon.tech/) crea un proyecto PostgreSQL con el plan **Free**. Copia su conexión `postgresql://...` con SSL; **no la subas al repositorio ni la compartas por chat**.
+2. En [Render](https://dashboard.render.com/) selecciona **New → Web Service** (NO Blueprint), conecta tu GitHub y escoge el repositorio privado `SAL-R76/handless-automatiza-tu-tec`, rama `main`.
+3. Configura **Language/Runtime: Docker**, **Root Directory: vacío**, **Dockerfile Path: ./Dockerfile**, **Instance Type: Free**. Si el panel solo ofrece un plan de pago, **no lo aceptes**.
+4. En **Environment** añade: `DATABASE_URL` (la URL privada de Neon), `SESSION_SECRET` (texto aleatorio largo) y `DEMO_PASSWORD` (contraseña nueva para los 4 usuarios ficticios). El valor de `DEMO_PASSWORD` solo se aplica al crear la base nueva.
+5. Pulsa **Create Web Service**. Render instalará el cliente React y ejecutará FastAPI en el mismo servicio. Al finalizar, abre la URL real `https://...onrender.com` y comprueba `/api/health` (debe indicar `status: ok`).
+6. Verifica todo el recorrido con identidades **ficticias**, toma capturas, incluye la URL en el libro E4 y aplica la encuesta SUS a 5 personas reales antes de afirmar resultados de usabilidad.
+
+**Limitaciones del plan gratis:** Render duerme a los 15 minutos de inactividad; al despertar la carga inicial se demora. No usar SQLite en Render Free porque se borra en reinicios. Las bases gratuitas de Render caducan a los 30 días; por eso se propone Neon Free. Más detalles en [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md).
 
 Guía detallada: [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md).
 
