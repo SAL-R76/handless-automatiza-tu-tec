@@ -49,6 +49,8 @@ def call(method, path, expected=200, token=None, payload=None):
         raise AssertionError(f"{method} {path}: HTTP {code}; se esperaba {expected}")
     if "text/csv" in mime:
         return data.decode("utf-8-sig")
+    if "text/html" in mime:
+        return data.decode("utf-8", "replace")
     if data:
         try:
             return json.loads(data)
