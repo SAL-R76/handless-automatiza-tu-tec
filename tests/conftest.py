@@ -3,7 +3,9 @@ from fastapi.testclient import TestClient
 from backend.main import create_app
 
 @pytest.fixture()
-def client(tmp_path):
+def client(tmp_path,monkeypatch):
+    monkeypatch.setenv('DEMO_PASSWORD','HandlessDemo2026!')
+    monkeypatch.setenv('PUBLIC_DEMO_ENABLED','false')
     app=create_app(f'sqlite:///{tmp_path / "test.db"}',token_secret='PRUEBA-segura-larga-que-no-es-produccion')
     with TestClient(app) as c:
         yield c
