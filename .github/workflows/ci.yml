@@ -6,6 +6,10 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    env:
+      # Valor exclusivo para tests locales: NO es secreto ni contraseña de Render.
+      DEMO_PASSWORD: CI-FICTICIA-PRUEBA-LOCAL-SIN-ACCESO-PUBLICO
+      PUBLIC_DEMO_ENABLED: 'false'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
