@@ -76,6 +76,11 @@ Resultado de esta entrega: **32/32 tests automáticos aprobados**; benchmark rep
 
 Guía detallada: [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md).
 
+
+### Verificación pública de E4 (a ejecutar bajo demanda)
+
+El usuario indicó que [Handless en Render](https://handless.onrender.com/) responde con `status: ok` en `/api/health`. Se añadió un flujo **manual**, distinto de las pruebas locales, para iniciar sesión con los cuatro roles y ejecutar un proceso completo con datos ficticios: [Actions → E4 · pruebas en Handless](../../actions/workflows/e4-live.yml). Requiere el **secreto de repositorio `E4_DEMO_PASSWORD`**. Se descarga un reporte JSON con resultados reales y tiempos de cada operación, sin contraseñas. **Todavía no debe declararse aprobado hasta ejecutar la acción.** Cada ejecución crea una solicitud y una verificación preventiva ficticias. Consulta [la guía](docs/E4_PRUEBAS_ONLINE.md).
+
 ## E2/E3: cobertura de requisitos
 
 Cobertura técnico-funcional principal: RF-01..04, RF-06..09, RF-11..17; RF-05 (prioridad configurable: implementación parcial), RF-10 (avisos mediante bitácora, sin notificaciones push). RNF-01/02/07/10 se verifican en backend; RNF-03/04/06 requieren estudio/inspección UX; RNF-08/09 y RN-08 requieren infraestructura y procedimientos operativos. Véase `docs/ESTADO_DE_REQUISITOS.md`.
