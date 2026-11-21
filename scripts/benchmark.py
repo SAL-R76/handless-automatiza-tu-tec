@@ -1,5 +1,7 @@
 """Pruebas técnicas ejecutables con datos ficticios; NO es estudio con usuarios humanos."""
-import json, statistics, tempfile, time
+import json, statistics, tempfile, time, os
+os.environ['DEMO_PASSWORD'] = 'HandlessDemo2026!'  # Solo banco de pruebas local; no es contraseña pública.
+os.environ['PUBLIC_DEMO_ENABLED'] = 'false'
 from pathlib import Path
 from fastapi.testclient import TestClient
 from backend.main import create_app
