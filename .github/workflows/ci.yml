@@ -12,6 +12,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install -r requirements-dev.txt
+      - run: python -m py_compile scripts/test_live_e4.py
       - run: PYTHONPATH=. python -m pytest tests -q
       - run: PYTHONPATH=. python scripts/benchmark.py
   frontend:
