@@ -106,6 +106,8 @@ class SusIn(BaseModel):
 class LoginIn(BaseModel):
     username: str
     password: str
+class PublicDemoIn(BaseModel):
+    role: str
 class CreateTicket(BaseModel):
     area: str = Field(min_length=2,max_length=100)
     location: str = Field(min_length=3,max_length=120)
@@ -182,9 +184,12 @@ def create_app(db_url: str|None=None, token_secret: str|None=None)->FastAPI:
     secret=token_secret or os.environ.get('SESSION_SECRET','DEV-SOLO-LOCAL-NO-PRODUCTION')
     if os.environ.get('RENDER') and secret=='DEV-SOLO-LOCAL-NO-PRODUCTION':
         raise RuntimeError('SESSION_SECRET obligatoria para despliegue')
+    public_demo_enabled=os.environ.get('PUBLIC_DEMO_ENABLED','false').strip().lower() in ('1','true','yes','on')
     with SessionLocal() as db:
         if not db.scalar(select(User.id).limit(1)):
-            demo_password=os.environ.get('DEMO_PASSWORD','HandlessDemo2026!')
+            demo_password=os.environ.get('DEMO_PASSWORD','')
+            if not demo_password:
+                raise RuntimeError('DEMO_PASSWORD es obligatoria al crear los usuarios de demostración')
             users=[('jefatura','Jefatura A (ficticia)','jefatura'),('coordinacion','Coordinación B (ficticia)','coordinacion'),('tecnico','Técnico C (ficticio)','tecnico'),('planeacion','Planeación D (ficticia)','planeacion')]
             for username,display,role in users:
                 db.add(User(username=username,display=display,role=role,passhash=password_hash(demo_password)))
@@ -222,6 +227,20 @@ def create_app(db_url: str|None=None, token_secret: str|None=None)->FastAPI:
     def login(inp:LoginIn,db:Session=Depends(get_db)):
         user=db.scalar(select(User).where(User.username==inp.username))
         if not user or not verify_password(inp.password,user.passhash):raise HTTPException(401,'Credenciales incorrectas')
+        return {'token':make_token(user,secret),'user':{'id':user.id,'username':user.username,'display':user.display,'role':user.role}}
+    @app.get('/api/public-demo')
+    def public_demo_config():
+        return {'enabled':public_demo_enabled}
+    @app.post('/api/public-demo/login')
+    def public_demo_login(inp:PublicDemoIn,db:Session=Depends(get_db)):
+        # Acceso público y explícito SOLO a identidades ficticias, sin revelar DEMO_PASSWORD.
+        if not public_demo_enabled:
+            raise HTTPException(404,'Acceso público de demostración deshabilitado')
+        if inp.role not in ROLE_LABELS:
+            raise HTTPException(422,'Rol de demostración inválido')
+        user=db.scalar(select(User).where(User.username==inp.role,User.role==inp.role))
+        if not user:
+            raise HTTPException(503,'Cuenta ficticia no disponible')
         return {'token':make_token(user,secret),'user':{'id':user.id,'username':user.username,'display':user.display,'role':user.role}}
     @app.get('/api/me')
     def me(user:User=Depends(actor)):
