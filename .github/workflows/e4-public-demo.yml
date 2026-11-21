@@ -1,0 +1,21 @@
+name: E4 · comprobar acceso público Handless
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public-demo:
+    name: Comprobar Render · 4 roles sin contraseña
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Comprobar sintaxis del script
+        run: python -m py_compile scripts/check_public_demo_live.py
+      - name: Verificar acceso sin contraseña y permisos de identidad
+        run: python scripts/check_public_demo_live.py
