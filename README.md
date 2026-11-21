@@ -2,7 +2,7 @@
 
 **Gestión de mantenimiento preventivo y correctivo**, basada en el procedimiento TecNM-AD-PO-001 del Tecnológico Nacional de México (campus Matehuala), como **prototipo académico**, no sistema oficial.
 
-> **Estado de entrega:** código E4 publicado en este repositorio. El backend se probó localmente y el frontend React debe verificarse en GitHub Actions; el despliegue público queda pendiente de configurar un Web Service Free en Render y una base de datos PostgreSQL Free en Neon.
+> **Estado de entrega:** aplicación E4 publicada en [Render](https://handless.onrender.com/) y código en GitHub. La ejecución [GitHub Actions #44872231317](https://github.com/SAL-R76/handless-automatiza-tu-tec/actions/runs/44872231317) acreditó 31/31 pruebas funcionales (antes de añadir el acceso público opcional). La evaluación de usabilidad con cinco usuarios reales continúa pendiente.
 
 ## Qué cambia respecto a E3
 
@@ -41,16 +41,15 @@ npm run dev
 
 Abre `http://localhost:5173`. La API está disponible en `http://localhost:8000/docs`.
 
-**Credenciales de demostración local**, *no deben usarse como cuentas reales*:
+**No hay contraseñas de demostración precargadas en la interfaz.** Para ejecutar el proyecto desde una base de datos nueva, configura las variables de entorno `DEMO_PASSWORD` y `SESSION_SECRET` con valores privados; la plantilla `.env.example` no contiene claves. Las cuentas ficticias son `jefatura`, `coordinacion`, `tecnico` y `planeacion`.
 
-| Usuario | Rol | Contraseña local |
-| --- | --- | --- |
-| `jefatura` | Jefatura | `HandlessDemo2026!` |
-| `coordinacion` | Coordinación | `HandlessDemo2026!` |
-| `tecnico` | Técnico | `HandlessDemo2026!` |
-| `planeacion` | Planeación | `HandlessDemo2026!` |
+### Acceso libre de demostración (sin revelar contraseñas)
 
-En nube define `DEMO_PASSWORD` con una contraseña propia en variables de entorno. **No subas contraseñas ni datos reales a GitHub**.
+Para que cualquier visitante pueda entrar a la aplicación y escoger uno de los cuatro roles, entra a **Render → servicio Handless → Environment** y establece `PUBLIC_DEMO_ENABLED=true`. Vuelve a desplegar o reiniciar el servicio para aplicar la variable. La aplicación mostrará el botón **Entrar sin contraseña**. Por defecto esta capacidad está desactivada si la variable no existe.
+
+La contraseña `DEMO_PASSWORD` permanece protegida **en Render** y se utiliza para crear las cuentas la primera vez; no se envía al navegador para permitir el acceso libre. El secreto de GitHub Actions `E4_DEMO_PASSWORD` se usa **solo para los tests de GitHub** y no se comparte automáticamente con Render.
+
+**Advertencia:** cuando el acceso libre está activo, cualquier persona puede actuar como los cuatro roles, consultar y modificar los **registros compartidos** de la demostración. No uses datos personales, institucionales ni confidenciales. Deshabilita `PUBLIC_DEMO_ENABLED` en Render después de la revisión pública o si quieres bloquear accesos. Los endpoints con permisos siguen comprobando cada rol.
 
 ## Pruebas ejecutadas
 
@@ -64,7 +63,7 @@ Resultado de esta entrega: **32/32 tests automáticos aprobados**; benchmark rep
 
 
 
-### Verificación pública de E4 (a ejecutar bajo demanda)
+### Verificación pública de E4
 
 El usuario indicó que [Handless en Render](https://handless.onrender.com/) responde con `status: ok` en `/api/health`. Se añadió un flujo **manual**, distinto de las pruebas locales, para iniciar sesión con los cuatro roles y ejecutar un proceso completo con datos ficticios: [Actions → E4 · pruebas en Handless](../../actions/workflows/e4-live.yml). Requiere el **secreto de repositorio `E4_DEMO_PASSWORD`**. Se descarga un reporte JSON con resultados reales y tiempos de cada operación, sin contraseñas. **Ejecución #1 verificada: 31 pruebas aprobadas, 0 fallidas** ([GitHub Actions #44872231317](https://github.com/SAL-R76/handless-automatiza-tu-tec/actions/runs/44872231317), 21 de noviembre de 2026, 05:44 UTC). Se creó el folio ficticio `HLS-2026-00002`. El reporte `handless-e4-resultados-publicos` quedó guardado como artefacto de esa ejecución. Esta evidencia técnica **no sustituye** la evaluación SUS con cinco personas reales. Cada ejecución crea una solicitud y una verificación preventiva ficticias. Consulta [la guía](docs/E4_PRUEBAS_ONLINE.md).
 
