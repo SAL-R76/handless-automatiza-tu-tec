@@ -19,7 +19,6 @@ jobs:
     timeout-minutes: 15
     env:
       HANDLESS_BASE_URL: https://handless.onrender.com
-      E4_DEMO_PASSWORD: ${{ secrets.E4_DEMO_PASSWORD }}
       E4_REPORT_PATH: artifacts/e4_live_report.json
     steps:
       - name: Descargar código del proyecto
@@ -31,6 +30,8 @@ jobs:
           python-version: '3.12'
 
       - name: Comprobar configuración sin revelar credenciales
+        env:
+          E4_DEMO_PASSWORD: ${{ secrets.E4_DEMO_PASSWORD }}
         shell: bash
         run: |
           if [ -z "$E4_DEMO_PASSWORD" ]; then
@@ -40,6 +41,8 @@ jobs:
           python -m py_compile scripts/test_live_e4.py
 
       - name: Ejecutar pruebas contra el servidor desplegado
+        env:
+          E4_DEMO_PASSWORD: ${{ secrets.E4_DEMO_PASSWORD }}
         run: python scripts/test_live_e4.py
 
       - name: Guardar reporte JSON descargable (sin contraseñas)
