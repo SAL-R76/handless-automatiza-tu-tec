@@ -61,20 +61,7 @@ PYTHONPATH=. python scripts/benchmark.py
 
 Resultado de esta entrega: **32/32 tests automáticos aprobados**; benchmark reproducible en `docs/resultados_e4.json` (100 folios únicos, 100 búsquedas, cierres prematuros y accesos indebidos bloqueados). **El frontend no pudo instalarse/compilarse en el entorno de generación por inaccesibilidad de npm**: se incluye CI de GitHub para compilarlo cuando el repositorio se publique. No se ha medido aún la latencia desde internet.
 
-## Publicar en GitHub y la nube
 
-**Opción sin recursos de pago, recomendada:** Render Web Service `Free` (app React + FastAPI) + Neon Postgres `Free` (datos). **No elijas Blueprint si la pantalla ofrece recursos de pago.**
-
-1. En [Neon](https://console.neon.tech/) crea un proyecto PostgreSQL con el plan **Free**. Copia su conexión `postgresql://...` con SSL; **no la subas al repositorio ni la compartas por chat**.
-2. En [Render](https://dashboard.render.com/) selecciona **New → Web Service** (NO Blueprint), conecta tu GitHub y escoge el repositorio privado `SAL-R76/handless-automatiza-tu-tec`, rama `main`.
-3. Configura **Language/Runtime: Docker**, **Root Directory: vacío**, **Dockerfile Path: ./Dockerfile**, **Instance Type: Free**. Si el panel solo ofrece un plan de pago, **no lo aceptes**.
-4. En **Environment** añade: `DATABASE_URL` (la URL privada de Neon), `SESSION_SECRET` (texto aleatorio largo) y `DEMO_PASSWORD` (contraseña nueva para los 4 usuarios ficticios). El valor de `DEMO_PASSWORD` solo se aplica al crear la base nueva.
-5. Pulsa **Create Web Service**. Render instalará el cliente React y ejecutará FastAPI en el mismo servicio. Al finalizar, abre la URL real `https://...onrender.com` y comprueba `/api/health` (debe indicar `status: ok`).
-6. Verifica todo el recorrido con identidades **ficticias**, toma capturas, incluye la URL en el libro E4 y aplica la encuesta SUS a 5 personas reales antes de afirmar resultados de usabilidad.
-
-**Limitaciones del plan gratis:** Render duerme a los 15 minutos de inactividad; al despertar la carga inicial se demora. No usar SQLite en Render Free porque se borra en reinicios. Las bases gratuitas de Render caducan a los 30 días; por eso se propone Neon Free. Más detalles en [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md).
-
-Guía detallada: [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md).
 
 
 ### Verificación pública de E4 (a ejecutar bajo demanda)
