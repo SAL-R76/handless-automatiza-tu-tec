@@ -22,26 +22,6 @@ No es un `.html` abierto desde el disco. Ahora existe una aplicación cliente Re
 - Python 3.11+ / Node 22+ (o Docker).
 - En local: SQLite. En nube: PostgreSQL mediante `DATABASE_URL`.
 
-### Ejecutar en local (dos consolas)
-
-```bash
-python -m venv .venv
-# Windows: .venv\\Scripts\\activate  |  macOS/Linux: source .venv/bin/activate
-pip install -r requirements-dev.txt
-uvicorn backend.main:app --reload --port 8000
-```
-
-En otra terminal:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Abre `http://localhost:5173`. La API está disponible en `http://localhost:8000/docs`.
-
-**No hay contraseñas de demostración precargadas en la interfaz.** Para ejecutar el proyecto desde una base de datos nueva, configura las variables de entorno `DEMO_PASSWORD` y `SESSION_SECRET` con valores privados; la plantilla `.env.example` no contiene claves. Las cuentas ficticias son `jefatura`, `coordinacion`, `tecnico` y `planeacion`.
 
 ### Acceso libre de demostración (sin revelar contraseñas)
 
