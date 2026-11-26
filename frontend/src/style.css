@@ -366,3 +366,25 @@ input:not([type=checkbox]),select,textarea{border-color:#cedaec;color:#233952;ou
  .ops-hero-primary,.ops-stage,.ops-nav-item,.ops-work-item{transition:none}
  .ops-hero-primary:hover{transform:none}
 }
+
+
+/* Ajuste de proporciones del logotipo TecNM en formato horizontal. */
+.ops-masthead .brand.institutional-brand .tecnm-logo,
+.ops-login-header .brand.institutional-brand .tecnm-logo{width:168px;height:76px;object-fit:cover;object-position:center;background:transparent}
+.ops-masthead .brand.institutional-brand,
+.ops-login-header .brand.institutional-brand{max-width:380px;gap:9px}
+.ops-masthead .brand-school strong,
+.ops-login-header .brand-school strong{font-size:12px!important;line-height:1.35;color:#24476d}
+.ops-masthead .brand-school small,
+.ops-login-header .brand-school small{font-size:10px}
+@media(max-width:1220px){
+ .ops-masthead .brand.institutional-brand .tecnm-logo{width:148px;height:69px}
+ .ops-masthead .brand.institutional-brand{max-width:340px}
+}
+@media(max-width:680px){
+ .ops-masthead .brand.institutional-brand .tecnm-logo{width:146px;height:70px}
+ .ops-masthead .brand-school{display:none!important}
+ .ops-login-header .brand.institutional-brand .tecnm-logo{width:153px;height:70px}
+ .ops-login-header .brand-school{display:flex!important}
+ .ops-login-header .brand-school strong{font-size:11px!important}
+}
