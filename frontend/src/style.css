@@ -531,3 +531,11 @@ input:not([type=checkbox]),select,textarea{border-color:#cedaec;color:#233952;ou
  .ops-utility-content>div{width:100%;justify-content:flex-end}
 }
 @media(prefers-reduced-motion:reduce){.ux-shortcut{transition:none}.ux-shortcut:hover{transform:none}}
+
+
+/* Confirmación del flujo: la asignación inicial se realiza una sola vez. */
+.assignment-confirmed{display:flex;align-items:flex-start;gap:13px;padding:20px;background:#e9f4ee;border:1px solid #cfe5d8;border-radius:11px;color:#256647}
+.assignment-confirmed>svg{flex-shrink:0;margin-top:2px}
+.assignment-confirmed strong{font-size:14px;color:#225d42}
+.assignment-confirmed p{font-size:12px;color:#527765;line-height:1.65;margin:7px 0 0}
+@media(max-width:520px){.assignment-confirmed{padding:16px;gap:10px}}
