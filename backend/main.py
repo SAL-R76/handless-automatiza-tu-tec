@@ -20,7 +20,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Query, Response
 from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, Float, create_engine, func, select
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, Float, create_engine, func, select, update
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship, sessionmaker
 from sqlalchemy.pool import StaticPool
 from backend.automation import suggest_routing
@@ -306,11 +306,21 @@ def create_app(db_url: str|None=None, token_secret: str|None=None)->FastAPI:
         if inp.route not in ('interna','externa'):raise HTTPException(422,'Ruta incorrecta')
         if inp.route=='externa' and not inp.external_reference:
             raise HTTPException(422,'Para servicio externo registra la referencia de la autorización institucional (simulada). Handless no realiza compras.')
-        old=t.status
-        t.technician_id=u.id;t.destination=inp.destination;t.priority=inp.priority;t.route=inp.route
-        t.external_reference=inp.external_reference if inp.route=='externa' else None
-        t.order_number='OT-'+t.folio;t.status='asignada'
-        audit(db,t,user,'asignar_orden',old,t.status+':'+str(u.id))
+        # Transición atómica: incluso ante solicitudes concurrentes solo una puede
+        # mover el expediente de "recibida" a "asignada".
+        result=db.execute(
+            update(Ticket)
+            .where(Ticket.id==t.id,Ticket.status=='recibida')
+            .values(technician_id=u.id,destination=inp.destination,priority=inp.priority,
+                    route=inp.route,
+                    external_reference=inp.external_reference if inp.route=='externa' else None,
+                    order_number='OT-'+t.folio,status='asignada',updated_at=stamp())
+        )
+        if result.rowcount!=1:
+            db.rollback()
+            raise HTTPException(409,'Esta orden ya fue asignada por otra solicitud. Actualiza el expediente.')
+        db.refresh(t)
+        audit(db,t,user,'asignar_orden','recibida',t.status+':'+str(u.id))
         notify(db,t,'tecnico','orden_asignada',f'{t.folio}: orden asignada. Consulta el expediente para iniciar el trabajo.')
         db.commit()
         return ticket_out(t)
