@@ -11,7 +11,7 @@ async function req(path,token,opt={}){
   if(!res.ok){let j={};try{j=await res.json()}catch{};let d=j.detail||res.statusText;throw new Error(typeof d==='string'?d:JSON.stringify(d))}
   return res.headers.get('content-type')?.includes('application/json')?res.json():res.text();
 }
-function Logo(){return <div className="brand institutional-brand"><img className="tecnm-logo" src="https://0201.nccdn.net/1_2/000/000/197/614/logo-tecnm-sin-texto.png" alt="Logotipo del Tecnológico Nacional de México" onError={e=>{e.currentTarget.style.display='none'}}/><div className="brand-school"><strong>TecNM</strong><small>INSTITUTO TECNOLÓGICO DE MATEHUALA</small><span>Gestión de mantenimiento</span></div></div>}
+function Logo(){return <div className="brand institutional-brand"><img className="tecnm-logo" src="https://0201.nccdn.net/1_2/000/000/197/614/logo-tecnm-sin-texto.png" alt="Logotipo del Tecnológico Nacional de México" onError={e=>{e.currentTarget.style.display='none'}}/><div className="brand-school"><strong>Instituto Tecnológico</strong><small>DE MATEHUALA</small><span>Prototipo académico</span></div></div>}
 function Pill({status}){return <span className={'status status-'+status}>{STATES[status]||status}</span>}
 function Label({children}){return <label className="input-label">{children}</label>}
 function Alert({message,success}){return message?<div role="status" className={'notice '+(success?'notice-success':'notice-error')}>{success?<CheckCircle2 size={16}/>:<AlertCircle size={16}/>} {message}</div>:null}
@@ -63,7 +63,8 @@ function App(){
  const focusStage=pipeline.find(x=>x.id===statusFocus);
  const visibleTickets=tickets.filter(t=>(!focusStage||focusStage.statuses.includes(t.status))&&(t.folio+' '+t.area+' '+t.asset).toLowerCase().includes(search.toLowerCase()));
  const actionStatuses=user?.role==='jefatura'?['pendiente_vobo']:user?.role==='coordinacion'?['recibida','aprobada']:user?.role==='tecnico'?['asignada','en_atencion','retrabajo']:['cerrada'];
- const actionItems=tickets.filter(t=>actionStatuses.includes(t.status)).slice(0,5);
+ const actionQueue=tickets.filter(t=>actionStatuses.includes(t.status));
+ const actionItems=actionQueue.slice(0,5);
  const workLabel=user?.role==='jefatura'?'Por validar':user?.role==='coordinacion'?'Para asignar o cerrar':user?.role==='tecnico'?'Trabajo por atender':'Listas para planeación';
  const actionText=user?.role==='jefatura'?'Revisar el trabajo y registrar el visto bueno.':user?.role==='coordinacion'?'Confirmar asignaciones o cerrar órdenes aprobadas.':user?.role==='tecnico'?'Atender órdenes asignadas y documentar la intervención.':'Consultar registros cerrados y preparar reportes.';
  if(!user)return <div className="ops-login-shell">
@@ -124,7 +125,7 @@ function App(){
         <span className="ops-hero-muted"><ShieldCheck size={17}/> Permisos y aprobaciones conservados</span>
       </div>
     </div>
-    <div className="ops-hero-side"><div className="ops-hero-side-label">TU ÁREA DE TRABAJO</div><div className="ops-hero-side-role">{ROLES[user.role]}</div><div className="ops-hero-side-stat"><span>{actionItems.length}</span><div><strong>{workLabel}</strong><small>En tu alcance actual</small></div></div><div className="ops-hero-side-note"><Activity size={15}/> Información actualizada desde el sistema</div></div>
+    <div className="ops-hero-side"><div className="ops-hero-side-label">TU ÁREA DE TRABAJO</div><div className="ops-hero-side-role">{ROLES[user.role]}</div><div className="ops-hero-side-stat"><span>{actionQueue.length}</span><div><strong>{workLabel}</strong><small>En tu alcance actual</small></div></div><div className="ops-hero-side-note"><Activity size={15}/> Información actualizada desde el sistema</div></div>
   </section>
   <section className="ops-process" aria-labelledby="process-title">
     <div className="ops-section-heading"><div><span className="ops-section-index">01 / FLUJO DEL PROCESO</span><h2 id="process-title">Estado del mantenimiento</h2><p>Selecciona una etapa para consultar los expedientes correspondientes.</p></div><button className="ops-link-button" onClick={()=>navigate('solicitudes')}>Ver todos los expedientes <ArrowRight size={17}/></button></div>
@@ -136,7 +137,7 @@ function App(){
   </section>
   <section className="ops-workbench" aria-label="Operación y automatización">
     <div className="ops-workbench-main">
-      <div className="ops-section-heading ops-workbench-heading"><div><span className="ops-section-index">02 / PRIORIDADES DE TU ROL</span><h2>{workLabel}</h2><p>{actionText}</p></div><span className="ops-count-chip">{actionItems.length} {actionItems.length===1?'expediente':'expedientes'}</span></div>
+      <div className="ops-section-heading ops-workbench-heading"><div><span className="ops-section-index">02 / PRIORIDADES DE TU ROL</span><h2>{workLabel}</h2><p>{actionText}</p></div><span className="ops-count-chip">{actionQueue.length} {actionQueue.length===1?'expediente':'expedientes'}</span></div>
       <div className="ops-work-list">{actionItems.length?actionItems.map(t=><button type="button" className="ops-work-item" key={t.id} onClick={()=>choose(t)}>
         <span className="ops-work-item-icon"><ClipboardList size={19}/></span><span className="ops-work-item-detail"><strong>{t.asset}</strong><small>{t.folio} · {t.area}</small></span><span className="ops-work-item-meta"><Pill status={t.status}/><ChevronRight size={18}/></span>
       </button>):<div className="ops-work-empty"><CheckCircle2 size={28}/><strong>No tienes acciones pendientes en esta vista</strong><p>Cuando corresponda actuar a tu rol, los expedientes aparecerán aquí.</p></div>}</div>
