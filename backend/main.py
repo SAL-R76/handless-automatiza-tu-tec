@@ -299,7 +299,7 @@ def create_app(db_url: str|None=None, token_secret: str|None=None)->FastAPI:
     @app.post('/api/tickets/{id}/assign')
     def assign(id:int,inp:AssignIn,db:Session=Depends(get_db),user:User=Depends(actor)):
         allow(user,'coordinacion');t=ticket_for(db,user,id)
-        if t.status not in ('recibida','asignada'):raise HTTPException(409,'La orden no puede asignarse en este estado')
+        if t.status!='recibida':raise HTTPException(409,'Esta orden ya fue asignada o avanzó de etapa. No puede asignarse nuevamente.')
         u=db.get(User,inp.technician_id)
         if not u or u.role!='tecnico':raise HTTPException(422,'Selecciona un técnico válido')
         if inp.priority not in ('baja','media','alta','urgente'):raise HTTPException(422,'Prioridad incorrecta')
