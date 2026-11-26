@@ -23,6 +23,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, Float, create_engine, func, select
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship, sessionmaker
 from sqlalchemy.pool import StaticPool
+from backend.automation import suggest_routing
 
 ROOT = Path(__file__).resolve().parents[1]
 ROLE_LABELS = {'jefatura':'Jefatura solicitante','coordinacion':'Coordinación de mantenimiento','tecnico':'Personal técnico','planeacion':'Planeación'}
@@ -75,6 +76,16 @@ class Audit(Base):
     action: Mapped[str] = mapped_column(String(100))
     old_value: Mapped[str] = mapped_column(Text, default='')
     new_value: Mapped[str] = mapped_column(Text, default='')
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),default=lambda:datetime.now(timezone.utc))
+
+class Notification(Base):
+    """Avisos internos producidos por transiciones del procedimiento."""
+    __tablename__='notifications'
+    id: Mapped[int] = mapped_column(Integer,primary_key=True)
+    recipient_role: Mapped[str] = mapped_column(String(30),index=True)
+    ticket_id: Mapped[int] = mapped_column(ForeignKey('tickets.id'))
+    event: Mapped[str] = mapped_column(String(60))
+    message: Mapped[str] = mapped_column(String(360))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),default=lambda:datetime.now(timezone.utc))
 
 class Preventive(Base):
@@ -218,9 +229,11 @@ def create_app(db_url: str|None=None, token_secret: str|None=None)->FastAPI:
         allowed=user.role=='coordinacion' or (user.role=='jefatura' and user.id==t.author_id) or (user.role=='tecnico' and user.id==t.technician_id) or (user.role=='planeacion' and t.status=='cerrada')
         if not allowed:raise HTTPException(404,'Folio no encontrado')
         return t
-    def audit(db:Session,t:Ticket,user:User,action:str,old:str,new:str):
-        db.add(Audit(ticket_id=t.id,actor_id=user.id,actor_role=user.role,action=action,old_value=old,new_value=new))
+    def audit(db:Session,t:Ticket,user:User,action:str,old:str,new:str,source:str='usuario'):
+        db.add(Audit(ticket_id=t.id,actor_id=user.id,actor_role='sistema' if source=='sistema' else user.role,action=action,old_value=old,new_value=new))
         t.updated_at=stamp()
+    def notify(db:Session,t:Ticket,role:str,event:str,message:str):
+        db.add(Notification(ticket_id=t.id,recipient_role=role,event=event,message=message))
     @app.get('/api/health')
     def health():return {'status':'ok','app':'handless-e4','environment':'academic-demo'}
     @app.post('/api/login')
@@ -248,6 +261,12 @@ def create_app(db_url: str|None=None, token_secret: str|None=None)->FastAPI:
     @app.get('/api/users')
     def users(db:Session=Depends(get_db),user:User=Depends(actor)):
         return [{'id':u.id,'display':u.display,'role':u.role} for u in db.scalars(select(User).order_by(User.id))]
+    @app.get('/api/notifications')
+    def notifications(db:Session=Depends(get_db),user:User=Depends(actor)):
+        rows=db.scalars(select(Notification).where(Notification.recipient_role==user.role)
+            .order_by(Notification.id.desc()).limit(50))
+        return [{'id':n.id,'ticket_id':n.ticket_id,'event':n.event,
+                 'message':n.message,'created_at':iso(n.created_at)} for n in rows]
     @app.get('/api/tickets')
     def list_tickets(q:str='',status:str='',kind:str='',db:Session=Depends(get_db),user:User=Depends(actor)):
         stmt=visible(db,user)
@@ -260,7 +279,9 @@ def create_app(db_url: str|None=None, token_secret: str|None=None)->FastAPI:
     def get_ticket(id:int,db:Session=Depends(get_db),user:User=Depends(actor)):
         t=ticket_for(db,user,id)
         audits=list(db.scalars(select(Audit).where(Audit.ticket_id==id).order_by(Audit.id.desc())))
-        return {'ticket':ticket_out(t),'audit':[audit_out(a) for a in audits]}
+        recommendation=next((json.loads(a.new_value) for a in audits if a.action=='sugerencia_automatica'),None)
+        return {'ticket':ticket_out(t),'audit':[audit_out(a) for a in audits],
+                'automation':recommendation}
     @app.post('/api/tickets',status_code=201)
     def create_ticket(inp:CreateTicket,db:Session=Depends(get_db),user:User=Depends(actor)):
         allow(user,'jefatura')
@@ -269,6 +290,10 @@ def create_app(db_url: str|None=None, token_secret: str|None=None)->FastAPI:
         db.add(t);db.flush()
         t.folio=f'HLS-2026-{t.id:05d}'
         audit(db,t,user,'crear_solicitud','',t.status)
+        recommendation=suggest_routing(t.area,t.asset,t.description,t.category).to_dict()
+        audit(db,t,user,'sugerencia_automatica','',json.dumps(recommendation,ensure_ascii=False),source='sistema')
+        notify(db,t,'coordinacion','solicitud_nueva',
+            f'{t.folio}: nueva solicitud. Prioridad sugerida: {recommendation["priority"]}. Requiere revisión y asignación.')
         db.commit();db.refresh(t)
         return ticket_out(t)
     @app.post('/api/tickets/{id}/assign')
@@ -285,7 +310,9 @@ def create_app(db_url: str|None=None, token_secret: str|None=None)->FastAPI:
         t.technician_id=u.id;t.destination=inp.destination;t.priority=inp.priority;t.route=inp.route
         t.external_reference=inp.external_reference if inp.route=='externa' else None
         t.order_number='OT-'+t.folio;t.status='asignada'
-        audit(db,t,user,'asignar_orden',old,t.status+':'+str(u.id));db.commit()
+        audit(db,t,user,'asignar_orden',old,t.status+':'+str(u.id))
+        notify(db,t,'tecnico','orden_asignada',f'{t.folio}: orden asignada. Consulta el expediente para iniciar el trabajo.')
+        db.commit()
         return ticket_out(t)
     @app.post('/api/tickets/{id}/work')
     def work(id:int,inp:WorkIn,db:Session=Depends(get_db),user:User=Depends(actor)):
@@ -296,7 +323,10 @@ def create_app(db_url: str|None=None, token_secret: str|None=None)->FastAPI:
         t.work_notes=((t.work_notes+'\n') if t.work_notes else '')+f'{stamp().isoformat()} - {inp.note.strip()}'
         t.status='pendiente_vobo' if inp.finished else 'en_atencion'
         t.vobo_by=None;t.vobo_at=None
-        audit(db,t,user,'registrar_intervencion',old,t.status);db.commit()
+        audit(db,t,user,'registrar_intervencion',old,t.status)
+        if inp.finished:
+            notify(db,t,'jefatura','vobo_pendiente',f'{t.folio}: intervención finalizada. Se solicita revisión y Vo.Bo.')
+        db.commit()
         return ticket_out(t)
     @app.post('/api/tickets/{id}/decision')
     def decision(id:int,inp:DecisionIn,db:Session=Depends(get_db),user:User=Depends(actor)):
@@ -309,6 +339,10 @@ def create_app(db_url: str|None=None, token_secret: str|None=None)->FastAPI:
         else:
             t.vobo_by=None;t.vobo_at=None;t.rejection_reason=inp.reason;t.status='retrabajo'
         audit(db,t,user,'validar_vobo' if inp.approved else 'rechazar_servicio',old,t.status)
+        if inp.approved:
+            notify(db,t,'coordinacion','vobo_aprobado',f'{t.folio}: Vo.Bo. registrado. Coordinación puede cerrar la orden.')
+        else:
+            notify(db,t,'tecnico','retrabajo',f'{t.folio}: servicio devuelto para retrabajo. Consulta los motivos.')
         db.commit();return ticket_out(t)
     @app.post('/api/tickets/{id}/close')
     def close(id:int,db:Session=Depends(get_db),user:User=Depends(actor)):
@@ -316,7 +350,9 @@ def create_app(db_url: str|None=None, token_secret: str|None=None)->FastAPI:
         if t.status!='aprobada' or not t.vobo_by or not t.vobo_at:
             raise HTTPException(409,'No se permite cerrar sin visto bueno de jefatura')
         old=t.status;t.status='cerrada';t.closed_at=stamp()
-        audit(db,t,user,'cerrar_orden',old,t.status);db.commit()
+        audit(db,t,user,'cerrar_orden',old,t.status)
+        notify(db,t,'planeacion','orden_cerrada',f'{t.folio}: orden cerrada; registro disponible para planeación y exportación.')
+        db.commit()
         return ticket_out(t)
     @app.post('/api/preventive',status_code=201)
     def preventive(inp:PreventiveIn,db:Session=Depends(get_db),user:User=Depends(actor)):
