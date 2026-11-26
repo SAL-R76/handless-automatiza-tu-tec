@@ -4,9 +4,19 @@
 
 > **Estado de entrega:** aplicación E4 publicada en [Render](https://handless.onrender.com/) y código en GitHub. La ejecución [GitHub Actions #44872231317](https://github.com/SAL-R76/handless-automatiza-tu-tec/actions/runs/44872231317) acreditó 31/31 pruebas funcionales (antes de añadir el acceso público opcional). La evaluación de usabilidad con cinco usuarios reales continúa pendiente.
 
-## Qué cambia respecto a E3
+## Plataforma y automatización
 
-No es un `.html` abierto desde el disco. Ahora existe una aplicación cliente React + API FastAPI + persistencia SQL. Las reglas de permisos, asignación y visto bueno se verifican en el **servidor**. El mismo servicio entrega la interfaz y la API; el despliegue previsto usa PostgreSQL.
+No es un archivo `.html` abierto desde el disco. Es una aplicación React + FastAPI + persistencia SQL. Las reglas de permisos, asignación y Vo.Bo. se verifican en el servidor.
+
+**Automatización E4 (fase 1, noviembre de 2026):**
+- Generación automática de folio, fecha y evento de auditoría al registrar -02.
+- Motor `backend/automation.py`: sugiere categoría, prioridad y destino mediante reglas deterministas y registra el identificador de regla en el historial. Coordinación debe confirmar la asignación y puede modificar lo sugerido.
+- Avisos internos automáticos dirigidos a cada rol al crear una solicitud, asignar una orden, solicitar Vo.Bo., rechazar, aprobar o cerrar. La bandeja `Avisos` consulta `GET /api/notifications`.
+- No hay correo, mensajería externa, recordatorios programados ni compras automatizadas.
+
+**Apariencia institucional:** colores del Manual de Identidad TecNM 2026, logo TecNM de referencia, denominación Instituto Tecnológico de Matehuala y sección `Acerca de` dedicada a la consultora ficticia Handless. El prototipo **no es un sistema oficial ni está autorizado para trámites reales**.
+
+Consulta la [matriz y la justificación de automatización](docs/AUTOMATIZACION_FASE1.md).
 
 ## Funciones
 
@@ -14,6 +24,7 @@ No es un `.html` abierto desde el disco. Ahora existe una aplicación cliente Re
 - **Coordinación:** clasifica y asigna, emite orden -04, registra referencia de autorización externa sin comprar, prepara programa preventivo -03 y cierra tras Vo.Bo.
 - **Técnico:** documenta trabajo, solicita aprobación y reinterviene ante rechazo.
 - **Planeación:** consulta únicamente órdenes cerradas, indicadores y exporta CSV para POA/PIA.
+- **Automatización interna:** sugerencia auditable por reglas, avisos por transición y generación de folios; sin aprobación automática.
 - **Todas las funciones críticas:** bitácora con usuario, rol, fecha, cambio anterior y nuevo; rechazo de transiciones indebidas y bloqueo de folios duplicados.
 - **Usabilidad:** formulario SUS de 10 preguntas con cálculo automático y código anónimo. No contiene respuestas inventadas.
 
@@ -38,7 +49,7 @@ PYTHONPATH=. pytest tests -q
 PYTHONPATH=. python scripts/benchmark.py
 ```
 
-Resultado de esta entrega: **32/32 tests automáticos aprobados**; benchmark reproducible en `docs/resultados_e4.json` (100 folios únicos, 100 búsquedas, cierres prematuros y accesos indebidos bloqueados). **El frontend no pudo instalarse/compilarse en el entorno de generación por inaccesibilidad de npm**: se incluye CI de GitHub para compilarlo cuando el repositorio se publique. No se ha medido aún la latencia desde internet.
+**Fase 1 de automatización, 26 de noviembre de 2026:** **42/42 tests automáticos aprobados**, build de React correcto y benchmark de 100 folios sin duplicados, 10 cierres prematuros bloqueados, 6 eventos de auditoría en el flujo completo (incluye sugerencia del sistema). [GitHub Actions: ejecución comprobada](https://github.com/SAL-R76/handless-automatiza-tu-tec/actions/runs/45869740246). La medición del backend es local al entorno de pruebas; no equivale a rendimiento en internet ni a evaluación humana.
 
 
 
