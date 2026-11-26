@@ -6,12 +6,12 @@
 | RF-02 | Implementado | folios únicos DB; CP-02 | Nomenclatura académica |
 | RF-03 | Implementado | POST /api/preventive; CP-03 | Lista -01 equivalente resumida |
 | RF-04 | Implementado | POST /api/preventive/{id}/program; CP-04 | Borrador -03 sin aprobación |
-| RF-05 | Parcial | Prioridad manual autorizada CP-05 | Falta motor de sugerencias configurables |
+| RF-05 | Parcial avanzado | Prioridad manual autorizada y sugerencia por reglas en backend/automation.py; tests/test_automation.py | Reglas académicas fijas por ahora; no son criterio institucional ni se aplican sin confirmación |
 | RF-06 | Implementado | Asignación por destino CP-06 | Ruta inicial manual; no integración institucional |
 | RF-07 | Implementado | Orden OT-... CP-07 | Equivalencia -04 simplificada |
 | RF-08 | Implementado | Referencia obligatoria externa CP-08 | No ejecuta compras ni valida autorización oficial |
 | RF-09 | Implementado | GET ticket y bitácora CP-09 | Alcance por rol |
-| RF-10 | Parcial | Bitácora de eventos CP-10 | No implementa bandeja push o correo |
+| RF-10 | Parcial avanzado | Bitácora y avisos internos por evento GET /api/notifications; tests/test_automation.py | No hay correo, push ni avisos externos; la bandeja requiere consulta |
 | RF-11 | Implementado | Intervención técnica CP-11 | Evidencia en texto, no multimedia |
 | RF-12 | Implementado | Aprobación y rechazo CP-12 | Vo.Bo. de rol ficticio |
 | RF-13 | Implementado | Cierre tras aprobación CP-13 | No firma electrónica formal |
@@ -35,3 +35,12 @@
 ## Significado
 
 **Implementado:** existe lógica y test automático. **Parcial:** hay soporte básico pero faltan componentes del requisito. **Pendiente:** no se debe afirmar cumplimiento hasta ejecutar la validación. Esta tabla es una declaración de alcance honesta para E4.
+
+## Fase 1 de automatización — noviembre de 2026
+
+- **Implementado en código:** sugerencias automáticas de categoría/prioridad/destino sobre la solicitud -02, registro de reglas en bitácora y avisos internos persistentes dirigidos por rol.
+- **Conserva control humano:** Coordinación elige prioridad final, responsable y ruta; Jefatura otorga Vo.Bo.; Coordinación cierra.
+- **Pendiente de una siguiente fase:** recordatorios programados, integración con correo y validación de criterios de prioridad por personal real.
+- **Identidad visual:** gama TecNM 2026; logotipo institucional como referencia académica; Handless solo en sección Acerca de.
+
+Más detalle en [AUTOMATIZACION_FASE1.md](AUTOMATIZACION_FASE1.md).
