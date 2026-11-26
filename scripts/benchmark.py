@@ -45,7 +45,7 @@ with tempfile.TemporaryDirectory() as temp:
         ]
         assert all(r.status_code==200 for r in steps)
         audit=c.get(f'/api/tickets/{t["id"]}',headers={'Authorization':roles['coordinacion']['Authorization']}).json()['audit']
-        assert len(audit)==5
+        assert len(audit)==6  # 5 eventos del flujo + sugerencia automática auditable
         export=c.get('/api/exports/closed.csv',headers={'Authorization':roles['planeacion']['Authorization']})
         assert export.status_code==200 and t['folio'] in export.text
         report={'run_type':'Prueba técnica local y reproducible; no prueba UX con usuarios',
