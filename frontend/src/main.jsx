@@ -66,7 +66,35 @@ function App(){
  const actionItems=tickets.filter(t=>actionStatuses.includes(t.status)).slice(0,5);
  const workLabel=user?.role==='jefatura'?'Por validar':user?.role==='coordinacion'?'Para asignar o cerrar':user?.role==='tecnico'?'Trabajo por atender':'Listas para planeación';
  const actionText=user?.role==='jefatura'?'Revisar el trabajo y registrar el visto bueno.':user?.role==='coordinacion'?'Confirmar asignaciones o cerrar órdenes aprobadas.':user?.role==='tecnico'?'Atender órdenes asignadas y documentar la intervención.':'Consultar registros cerrados y preparar reportes.';
- if(!user)return <div className="login-shell"><div className="login-info"><div className="login-logo"><Logo/></div><div className="login-copy"><div className="eyebrow">PROTOTIPO ACADÉMICO · TecNM-AD-PO-001</div><h1>Gestión institucional de mantenimiento.</h1><p>Prototipo académico para registrar, canalizar y supervisar el mantenimiento preventivo y correctivo de infraestructura y equipo.</p><div className="feature-points"><span><CheckCircle2 size={17}/> Clasificación automática sugerida</span><span><CheckCircle2 size={17}/> Permisos desde el servidor</span><span><CheckCircle2 size={17}/> Visto bueno obligatorio</span></div></div><div className="login-foot">PROTOTIPO ACADÉMICO · NO ES UN SISTEMA OFICIAL DEL TecNM · SOLO DATOS FICTICIOS</div></div><div className="login-right"><div className="login-card"><div className="eyebrow">ACCESO AL SISTEMA</div><h2>Acceso de demostración</h2><p>Elige un rol ficticio. Las acciones disponibles dependen del perfil.</p><form onSubmit={signIn}><Label>Rol de demostración</Label><select value={loginUser} onChange={e=>setLoginUser(e.target.value)}>{Object.entries(ROLES).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select>{publicDemo===false&&<><Label>Contraseña de demostración</Label><input type="password" value={loginPass} onChange={e=>setLoginPass(e.target.value)} required autoComplete="current-password"/></>}<button className="primary full" type="submit" disabled={busy||publicDemo===null}>{publicDemo===null?'Comprobando acceso...':publicDemo?'Entrar sin contraseña':'Entrar a Handless'} <ArrowRight size={17}/></button><Alert message={error}/></form><div className="help">{publicDemo?'Acceso abierto: cualquiera puede cambiar los registros ficticios de este entorno compartido. No ingreses datos personales.':'Entorno de ejercicio. Sin datos institucionales reales ni autorización de producción.'}</div></div></div></div>;
+ if(!user)return <div className="ops-login-shell">
+  <div className="ops-institutional-strip"><div className="ops-wide ops-strip-content"><span><span className="ops-strip-dot"/> ENTORNO DE EVALUACIÓN ACADÉMICA</span><span>Prototipo · TecNM-AD-PO-001</span></div></div>
+  <header className="ops-login-header"><div className="ops-wide ops-login-header-content"><Logo/><span className="ops-login-header-note"><ShieldCheck size={16}/> Acceso ficticio de demostración</span></div></header>
+  <main className="ops-login-body"><div className="ops-wide ops-login-grid">
+    <section className="ops-login-story"><div className="ops-login-eyebrow"><span className="ops-small-rule"/> SISTEMA DE GESTIÓN DE MANTENIMIENTO</div>
+      <h1>Un proceso claro.<br/><span>De principio a fin.</span></h1>
+      <p className="ops-login-lede">Automatización y seguimiento para el mantenimiento preventivo y correctivo de infraestructura y equipo.</p>
+      <div className="ops-login-diagram"><div className="ops-diagram-title"><Activity size={17}/> RUTA DEL PROCEDIMIENTO <span>VISTA GENERAL</span></div>
+        <div className="ops-diagram-steps">
+          <div><span className="ops-diagram-number">01</span><strong>Solicitud</strong><small>Registro y folio</small></div>
+          <div><span className="ops-diagram-number">02</span><strong>Asignación</strong><small>Responsable autorizado</small></div>
+          <div><span className="ops-diagram-number">03</span><strong>Atención</strong><small>Intervención técnica</small></div>
+          <div><span className="ops-diagram-number">04</span><strong>Validación</strong><small>Visto bueno y cierre</small></div>
+        </div>
+        <div className="ops-diagram-footer"><Workflow size={16}/> Automatizaciones auditables durante el proceso</div>
+      </div>
+      <div className="ops-login-assurance"><CheckCircle2 size={17}/> Los permisos y las aprobaciones siguen bajo control humano.</div>
+    </section>
+    <aside className="ops-login-entry"><div className="ops-entry-number">PORTAL / 01</div><div className="ops-entry-card">
+      <div className="ops-entry-icon"><UserRound size={25}/></div><div className="ops-entry-heading"><span>ACCESO AL SISTEMA</span><h2>Explorar el prototipo</h2><p>Selecciona un perfil ficticio para consultar las tareas y automatizaciones correspondientes a ese rol.</p></div>
+      <form onSubmit={signIn}><Label>Perfil de demostración</Label><select value={loginUser} onChange={e=>setLoginUser(e.target.value)}>{Object.entries(ROLES).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select>
+        {publicDemo===false&&<><Label>Contraseña de demostración</Label><input type="password" value={loginPass} onChange={e=>setLoginPass(e.target.value)} required autoComplete="current-password"/></>}
+        <button className="ops-entry-submit" type="submit" disabled={busy||publicDemo===null}>{publicDemo===null?'Comprobando acceso...':publicDemo?'Entrar sin contraseña':'Entrar al sistema'} <ArrowRight size={18}/></button>
+        <Alert message={error}/>
+      </form><div className="ops-entry-help"><Info size={16}/><span>{publicDemo?'Acceso abierto y compartido: utiliza solamente información ficticia. Los registros de prueba pueden ser modificados por otros visitantes.':'Acceso de demostración. No introduzcas datos reales ni institucionales.'}</span></div>
+    </div><div className="ops-entry-foot">PROTOTIPO ACADÉMICO · NO ES UN SISTEMA OFICIAL DEL TecNM</div></aside>
+  </div></main>
+  <footer className="ops-login-footer">Instituto Tecnológico de Matehuala · Propuesta académica desarrollada por Handless · TecNM-AD-PO-001</footer>
+ </div>;
  const total=tickets.length,open=tickets.filter(x=>x.status!=='cerrada').length,needs=tickets.filter(x=>x.status==='pendiente_vobo'||x.status==='retrabajo').length,closed=tickets.filter(x=>x.status==='cerrada').length;
  return <div className="ops-app">
    <div className="ops-institutional-strip"><div className="ops-wide ops-strip-content"><span><span className="ops-strip-dot"/> ENTORNO DE EVALUACIÓN ACADÉMICA</span><span>Datos ficticios · No es un sistema oficial del TecNM</span></div></div>
